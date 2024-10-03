@@ -1,7 +1,7 @@
 #Global variable:it is defined outside the class and outside the method
 #Local variable:it is defined inside a function/method.can be accessed within the function/method only
 #Static variable:it is defined inside a class and outside a method, can be accessed by class name.
-#Local variable: it is defined inside a method and inside a class, can be accessed by object.
+#Non-Static variable: it is defined inside a method and inside a class, can be accessed by object.
 r=30
 class sample:
     x=30
