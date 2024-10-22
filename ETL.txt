@@ -136,3 +136,108 @@ Complete the following practice exercises:
     Test the implemented functions and log the events as done in the lab.
 
 Please note that the solutions for this practice exercise are not provided to motivate you to try them yourself. However, feel free to share your opinions on the solutions as well as your questions in the discussion forums. 
+
+=========================================== WebScraping & API & HTML requests ===============================================================
+
+#python3.11 -m pip install pandas
+#python3.11 -m pip install bs4
+
+# Importing libraries
+import requests
+import sqlite3
+import pandas as pd
+from bs4 import BeautifulSoup
+
+# Initialization of Known entities
+url = 'https://web.archive.org/web/20230902185655/https://en.everybodywiki.com/100_Most_Highly-Ranked_Films'
+db_name = 'Movies.db'
+table_name = 'Top_50'
+csv_path = '/home/project/top_50_films.csv'
+df = pd.DataFrame(columns=["Average Rank","Film","Year"])
+count = 0
+
+#Loading the webpage for webscraping
+html_page = requests.get(url).text
+data = BeautifulSoup(html_page, 'html.parser')
+
+#Scraping of required inforamtion
+tables = data.find_all('tbody')
+rows = tables[0].find_all('tr')
+
+#
+for row in rows:
+    if count<50:
+        col = row.find_all('td')
+        if len(col)!=0:
+            data_dict = {"Average Rank": col[0].contents[0],
+                         "Film": col[1].contents[0],
+                         "Year": col[2].contents[0]}
+            df1 = pd.DataFrame(data_dict, index=[0])
+            df = pd.concat([df,df1], ignore_index=True)
+            count+=1
+    else:
+        break
+
+#Printing the dataframe
+print(df)
+df.to_csv(csv_path)
+
+# Making connection to the database --> To load
+conn = sqlite3.connect(db_name)
+df.to_sql(table_name, conn, if_exists='replace', index=False)
+conn.close()
+
+------------------------------------- PRACTICE EXERCISE-------------------
+
+Try the following practice problems to test your understanding of the lab. Please note that the solutions for the following are not shared. You are encouraged to use the discussion forums in case you need help.
+
+    Modify the code to extract Film, Year, and Rotten Tomatoes' Top 100 headers.
+
+    Restrict the results to only the top 25 entries.
+
+    Filter the output to print only the films released in the 2000s (year 2000 included).
+	
+==================================== Data Extracting from DB2 server ============================================
+import sqlite3
+import pandas as pd 
+conn = sqlite3.connect('STAFF.db')
+
+
+table_name = 'INSTRUCTOR'
+attribute_list = ['ID', 'FNAME', 'LNAME', 'CITY', 'CCODE']
+
+#Reading CSV file
+file_path = '/home/project/INSTRUCTOR.csv'
+df = pd.read_csv(file_path, names = attribute_list)
+
+#Loading Data to the Table
+df.to_sql(table_name, conn, if_exists = 'replace', index =False)
+print('Table is ready')
+
+# Viewing all the data in table
+query_statement = f"SELECT * FROM {table_name}"
+query_output = pd.read_sql(query_statement, conn)
+print(query_statement)
+print(query_output)
+
+#viewing only Fname col and data
+query_statement = f"SELECT FNAME FROM {table_name}"
+query_output = pd.read_sql(query_statement, conn)
+print(query_statement)
+print(query_output)
+
+#viewing total number of entries
+query_statement = f"SELECT COUNT(*) FROM {table_name}"
+query_output = pd.read_sql(query_statement, conn)
+print(query_statement)
+print(query_output)
+
+#creating data frame
+data_dict = {'ID' : [100],
+            'FNAME' : ['John'],
+            'LNAME' : ['Doe'],
+            'CITY' : ['Paris'],
+            'CCODE' : ['FR']}
+data_append = pd.DataFrame(data_dict)
+
+conn.close()
